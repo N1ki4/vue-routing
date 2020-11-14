@@ -5,7 +5,9 @@ import App from './App.vue';
 import TeamsList from './components/teams/TeamsList.vue';
 import UsersList from './components/users/UsersList.vue'; 
 import TeamMembers from './components/teams/TeamMembers.vue';
+import TeamsFooter from './components/teams/TeamsFooter.vue';
 import NotFound from './components/nav/NotFound.vue';
+import UsersFooter from './components/users/UsersFooter.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -14,17 +16,49 @@ const router = createRouter({
         { 
             name: 'teams',
             path: '/teams', 
-            component: TeamsList, 
+            components: {
+                default: TeamsList,
+                footer: TeamsFooter
+            }, 
             children: [
               { name: 'team-members', path: ':teamId', component: TeamMembers, props: true }
             ]
         },
-        { path: '/users', component: UsersList },
-
+        { 
+          path: '/users', 
+          components: {
+              default: UsersList,
+              footer: UsersFooter
+          },
+          beforeEnter(to, from, next) {
+              console.log('users before enter');
+              console.log(to, from);
+              next();
+          }
+        },
         { path: '/:notFound(.*)', component: NotFound }
     ],
-    linkActiveClass: 'active'
+    linkActiveClass: 'active',
+    scrollBehavior(_, _2, savedPosition) {
+        // console.log(to, from, savedPosition);
+        if (savedPosition){
+            return savedPosition;
+        }
+        return { left: 0, top: 0 }
+    }
 });
+
+router.beforeEach((to, from, next)=> {
+    console.log("Global beforeEach");
+    console.log(to, from);
+    next();
+});
+
+router.afterEach((to, from)=> {
+    // sending analytics data
+    console.log('Global afterEach');
+    console.log(to, from);
+})
 
 const app = createApp(App)
 
